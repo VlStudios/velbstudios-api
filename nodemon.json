@@ -7,6 +7,6 @@
         "MYSQL_PORT" : 3306,
 
         "JWT_KEY" : "CJF2021cjf$",
-         "URL_API" : "https://velbstudios-api.herokuapp.com/"
+         "URL_API" : "http://localhost:3000/"
     }
 }
