@@ -20,7 +20,7 @@ router.get('/' , (req, res, next) => {
                             request: {
                                 tipo: 'GET',
                                 descrição: 'retorna os detalhes de um pedido específico',
-                                url: process.abortenv.URL_API + 'produtos/' + pedido.id_pedido
+                                url: process.env.URL_API + 'pedidos/' + pedido.id_pedido
                             }
                         }
                     })
@@ -58,7 +58,7 @@ router.post('/', (req, res, next) => {
                         request: {
                             tipo: 'GET',
                             descrição: 'Retorna todos os pedidos ',
-                            url: process.env.URL_API + 'produtos/'
+                            url: process.env.URL_API + 'pedidos'
                         }
                     }
                 }
@@ -91,7 +91,7 @@ router.get('/:id_pedido', (req, res, next)=> {
                         request: {
                             tipo: 'GET',
                             descrição: 'Retorna todos os pedidos ',
-                            url: process.env.URL_API + 'produtos/'
+                            url: process.env.URL_API + 'pedidos'
                         }
                     }
                 }
@@ -115,7 +115,7 @@ router.delete('/', (req, res, next) => {
                     request: {
                         tipo: 'POST',
                         descricao: 'Insere um pedido',
-                        url: process.env.URL_API + 'produtos',
+                        url: process.env.URL_API + 'pedidos',
                         body: {
                             id_produto: 'Number',
                             quantidade: 'Number'

@@ -48,7 +48,7 @@ router.post('/', (req, res, next) => {
                         request: {
                             tipo: 'GET',
                             descrição: 'Retorna todos os produtos ',
-                            url: process.env.URL_API + 'produtos/'
+                            url: process.env.URL_API + 'produtos'
                         }
                     }
                 }
@@ -80,7 +80,7 @@ router.get('/:id_produto', (req, res, next)=> {
                         request: {
                             tipo: 'GET',
                             descrição: 'Retorna todos os produtos ',
-                            url: process.env.URL_API + 'produtos/'
+                            url: process.env.URL_API + 'produtos'
                         }
                     }
                 }
