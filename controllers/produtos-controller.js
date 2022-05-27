@@ -136,7 +136,7 @@ exports.updateProduto = async (req, res, next) => {
 exports.deleteProduto = async (req, res, next) => {
     try {
         const query = `DELETE FROM produtos WHERE (id_produto , imagem_produto)  = ?, ?`;
-        await mysql.execute(query, [req.body.id_produto , req.params.imagem_produto]);
+        await mysql.execute(query, [req.body.id_produto , req.body.imagem_produto]);
 
         const response = {
             mensagem: 'Produto removido com sucesso',
