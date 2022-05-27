@@ -1,6 +1,6 @@
 node_modules/
 
-/ploads/*.jpg
+ploads/*.jpg
 
 uploads/*.png
 
