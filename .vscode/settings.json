@@ -5,13 +5,26 @@
                 "authProtocol": "default"
             },
             "previewLimit": 50,
-            "server": "us-cdbr-east-04.cleardb.com",
+            "server": "localhost",
+            "port": 3306,
+            "driver": "MySQL",
+            "name": "root",
+            "database": "velbstudios",
+            "username": "root",
+            "password": "root"
+        },
+        {
+            "mysqlOptions": {
+                "authProtocol": "default"
+            },
+            "previewLimit": 50,
+            "server": "us-cdbr-east-05.cleardb.net",
             "port": 3306,
             "driver": "MySQL",
             "name": "cleardb-heroku",
-            "database": "heroku_5cd3a5c20ffeee6",
-            "username": "b6b49794453f17",
-            "password": "5900a57c"
+            "database": "heroku_bdc00d9acb0409a",
+            "username": "b5aa4f7b3749d9",
+            "password": "1f232e2c"
         }
     ]
 }

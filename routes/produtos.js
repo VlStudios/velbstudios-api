@@ -1,156 +1,56 @@
 const express = require('express');
 const router = express.Router();
-const mysql = require('../mysql').pool;
+const multer = require('multer');
 
-router.get('/' , (req, res, next) => {
-    mysql.getConnection((error, conn) => {
-        if (error) { return res.status(500).send({ error: error }) }
-        conn.query(
-            'SELECT * FROM produtos;',
-            (error , result, field) => {
-                if (error) { return res.status(500).send({ error: error }) }
-                const response = {
-                    quantdade: result.length,
-                    produtos: result.map(prod => {
-                        return {
-                            id_produto: prod.id_produto,
-                            nome: prod.nome,
-                            preco: prod.preco,
-                            request: {
-                                tipo: 'GET',
-                                descrição: 'retorna os detalhes de um produto específico',
-                                url: process.env.URL_API + 'produtos/' + prod.id_produto
-                            }
-                        }
-                    })
-                }
-                return res.status(200).send(response);
-            }
-        )
-    });
+const ProdutosController = require('../controllers/produtos-controller');
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb ) {
+        cb(null, './uploads/');
+    },
+    filename: function(req, file, cb) {
+        let data = new Date().toISOString().replace(/:/g, '-') + '-';
+        cb(null, data + file.originalname );
+    }
 });
 
-router.post('/', (req, res, next) => {
-    mysql.getConnection((error, conn) => {
-        if (error) { return res.status(500).send({ error: error }) }
-        conn.query(
-            'INSERT INTO produtos (nome, preco) VALUES (?,?)',
-            [req.body.nome, req.body.preco],
-            (error, result, field) => {
-                conn.release();
-                if (error) { return res.status(500).send({ error: error }) }
-                const response = {
-                    mensagem : 'Produto inserido com sucesso',
-                    ProdutoCriado: {
-                        id_produto: result.id_produto,
-                        nome: req.body.nome,
-                        preco: req.body.preco,
-                        request: {
-                            tipo: 'GET',
-                            descrição: 'Retorna todos os produtos ',
-                            url: process.env.URL_API + 'produtos'
-                        }
-                    }
-                }
-                return res.status(201).send(response);
-            }
-        )
-    });
-});
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+        cb(null, true);
+    } else {
+        cb(null, false);
+    }
+}
 
-router.get('/:id_produto', (req, res, next)=> {
-    mysql.getConnection((error, conn) => {
-        if (error) { return res.status(500).send({ error: error }) }
-        conn.query(
-            'SELECT * FROM produtos WHERE id_produto = ?;',
-            [req.params.id_produto],
-            (error, result, field) => {
-                if (error) { return res.status(500).send({ error: error }) }
+const upload = multer({ 
+    storage: storage,
+    limits: {
+        fileSize: 1024 * 1024 * 5
+    },
+    fileFilter: fileFilter
+ });
 
-                if (result.length == 0) {
-                    return res.status(404).send({
-                        mensagem: 'Não foi encontrado o produto com esse ID'
-                    })
-                }
-                const response = {
-                    produto: {
-                        id_produto: result[0].id_produto,
-                        nome: result[0].nome,
-                        preco: result[0].preco,
-                        request: {
-                            tipo: 'GET',
-                            descrição: 'Retorna todos os produtos ',
-                            url: process.env.URL_API + 'produtos'
-                        }
-                    }
-                }
-                return res.status(200).send(response);
-            }
-        )
-    });
-});
- 
-router.patch('/', (req, res, next) => {
-    mysql.getConnection((error, conn) => {
-        if (error) { return res.status(500).send({ error: error }) }
-        conn.query(
-            `UPDATE produtos
-                SET nome       =?,
-                    preco      =?
-            WHERE id_produto   =?`,
-                [
-                    req.body.nome,
-                    req.body.preco,
-                    req.body.id_produto
-                ],
-                (error, resultado, field) => {
-                    conn.release();
-                    if (error) { return res.status(500).send({ error: error }) }
-                const response = {
-                    mensagem : 'Produto atualizado com sucesso',
-                    produtoAtualizado: {
-                        id_produto: req.body.id_produto,
-                        nome: req.body.nome,
-                        preco: req.body.preco,
-                        request: {
-                            tipo: 'GET',
-                            descrição: 'retorna os detalhes de um produto específico',
-                            url: process.env.URL_API + 'produtos/' + req.body.id_produto
-                        }
-                    }
-                }
-                return res.status(202).send(response);
-            }
-        )
-    });
-});
+router.get('/' , ProdutosController.getProdutos);
+router.post(
+    '/',
+    upload.single('imagem_produto'),
+    ProdutosController.postProduto
+);
 
-router.delete('/', (req, res, next) => {
-    mysql.getConnection((error, conn) => {
-        if (error) { return res.status(500).send({ error: error }) }
-        conn.query(
-            `DELETE FROM produto WHERE id_produto = ?`,[req.body.id_produto],
-            (error, result, field) => {
-                conn.release();
-                if (error) { return res.status(500).send({ error: error }) }
-                const response = {
-                    mensagem: 'Produto removido com sucesso',
-                    request: {
-                        tipo: 'POST',
-                        descricao: 'Insere um produto',
-                        url: process.env.URL_API + 'produtos',
-                        body: {
-                            nome: 'String',
-                            preco: 'Number'
-                        }
+router.get('/:id_produto', ProdutosController.getUmProduto);
+router.patch('/', ProdutosController.updateProduto);
+router.delete('/', ProdutosController.deleteProduto);
 
-                    }
-                }
-                return res.status(202).send(response);
-            }
-        )
-    });
-});
+router.post(
+    '/:id_produto/imagem', 
+    upload.single('imagem_produto'),
+    ProdutosController.postImagem
+)
+
+router.get(
+    '/:id_produto/imagens',
+    ProdutosController.getImagens
+)
 
 module.exports = router;
 

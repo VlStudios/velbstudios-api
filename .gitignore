@@ -1,1 +1,9 @@
 node_modules/
+
+uploads/*.jpg
+
+uploads/*.png
+
+uploads_usuarios/*.jpg
+
+uploads_usuarios/*.png

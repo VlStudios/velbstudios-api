@@ -1,73 +1,38 @@
 const express = require('express');
 const router = express.Router();
-const mysql = require('../mysql').pool;
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const multer = require('multer');
 
-router.post('/cadastro', (req, res, next) => {
-    mysql.getConnection((err, conn) => {
-        if (err) { return res.status(500).send({ error: error }) }
-        conn.query('SELECT * FROM usuarios WHERE email = ?', [req.body.email], (error, results) => {
-            if (error) { return res.status(500).send({ error: error }) }
-            if (results.length > 0) {
-                res.status(409).send({ mesangem: 'Usuario ja cadastrado' })
-            } else {
-                bcrypt.hash(req.body.senha, 10, (errBcrypt, hash) => {
-                    if (errBcrypt) { return res.status(500).send({ error: errBcrypt }) }
-                    conn.query(
-                        'INSERT INTO usuarios ( nome, email, senha) VALUES (?,?,?)',
-                    [req.body.nome, req.body.email, hash],
-                    (error, results) => {
-                        conn.release();
-                        if (error) { return res.status(500).send({ error: error }) }
-                        response = {
-                            mesangem: 'Usuário criado com sucesso',
-                            usuarioCriado: {
-                                id_usuario: results.insertId,
-                                nome: req.body.nome,
-                                email: req.body.email
-                            }
-                        }
-                        return res.status(201).send(response);
-                    })
-                });
-            }
-        })
-    });
-})
+const UsuariosController = require('../controllers/usuarios-controller');
 
-router.post('/login' , (req, res, next) =>{
-    mysql.getConnection((error, conn) => {
-        if (error) { return res.status(500).send({ error: error }) }
-        const query = `SELECT * FROM usuarios WHERE email = ?`;
-        conn.query(query,[req.body.email],(error, results, fields) => {
-             conn.release();
-             if(error) { return res.status(500).send({ error: error }) }
-             if (results.length <1){
-                 return res.status(401).send({ mensagem: 'Falha no login' })
-             }
-             bcrypt.compare(req.body.senha, results[0].senha, (err, result) => {
-                 if (err) {
-                    return res.status(401).send({ mensagem: 'Falha no login' })
-                 }
-                 if (result) {
-                     const token = jwt.sign({
-                         id_usuario: results[0].id_usuario,
-                         email: results[0].email
-                     }, 
-                     "" + process.env.JWT_KEY,
-                     {
-                         expiresIn: "1h"
-                     });
-                     return res.status(200).send({ 
-                         mensagem: 'Autenticado com sucesso',
-                         token: token
-                     });
-                 }
-                 return res.status(401).send({ mensagem: 'Falha no login' })
-             });
-        });
-    });
-})
+const storage = multer.diskStorage({
+    destination: function (req, file, cb ) {
+        cb(null, './uploads_usuarios/');
+    },
+    filename: function(req, file, cb) {
+        let data = new Date().toISOString().replace(/:/g, '-') + '-';
+        cb(null, data + file.originalname );
+    }
+});
+
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+        cb(null, true);
+    } else {
+        cb(null, false);
+    }
+}
+
+const upload = multer({ 
+    storage: storage,
+    limits: {
+        fileSize: 1024 * 1024 * 5
+    },
+    fileFilter: fileFilter
+ });
+
+router.post('/cadastro', upload.single('imagem_usuarios'), UsuariosController.cadastrarUsuario);
+router.get('/' , UsuariosController.getUsuarios );
+router.post('/login', UsuariosController.Login);
+router.delete('/' , UsuariosController.deleteUsuario);
 
 module.exports = router;
