@@ -1,1 +1,1 @@
-DESCRIBE pedidos;
+SHOW TABLES;
