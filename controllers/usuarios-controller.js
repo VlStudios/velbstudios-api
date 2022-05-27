@@ -56,7 +56,7 @@ exports.getUsuarios = (req, res, next) => {
                             nome: prod.nome,
                             email: prod.email,
                             senha: prod.senha,
-                            imagem_usuarios: result[0].imagem_usuarios,
+                            imagem_usuarios: "/"+prod.imagem_usuarios.replace('\\' , '/'),
                             request: {
                                 tipo: 'GET',
                                 descrição: 'retorna os detalhes de um produto específico',
